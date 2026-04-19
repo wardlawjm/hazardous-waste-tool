@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CSU Hazardous Waste Storage Compliance Screening Tool</title>
+  <style>
+    :root {
+      --csu-green: #1e4d2b;
+      --csu-gold: #c8c372;
+      --csu-light: #f6f7f2;
+      --panel: #ffffff;
+      --text: #1f2937;
+      --muted: #5f6b63;
+      --border: #d5dccf;
+      --hazard-red: #8b1e1e;
+      --hazard-red-bg: #fde8e8;
+      --hazard-amber: #9a6700;
+      --hazard-amber-bg: #fff3d6;
+      --safe-green: #1f6b3a;
+      --safe-green-bg: #e6f4ea;
+      --shadow: 0 8px 24px rgba(30, 77, 43, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--text);
+      line-height: 1.5;
+      background:
+        linear-gradient(rgba(246, 247, 242, 0.94), rgba(246, 247, 242, 0.96)),
+        repeating-linear-gradient(
+          135deg,
+          rgba(30, 77, 43, 0.03),
+          rgba(30, 77, 43, 0.03) 18px,
+          rgba(200, 195, 114, 0.04) 18px,
+          rgba(200, 195, 114, 0.04) 36px
+        );
+    }
+
+    .topbar {
+      background: linear-gradient(90deg, var(--csu-green), #15361f);
+      color: white;
+      padding: 14px 0;
+      border-bottom: 4px solid var(--csu-gold);
+    }
+
+    .topbar-inner,
+    .container {
+      max-width: 1160px;
+      margin: 0 auto;
+      padding: 0 18px;
+    }
+
+    .topbar-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-weight: bold;
+      letter-spacing: 0.3px;
+      min-width: 0;
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .brand-title {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-subtitle {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.78);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .logo-wrap {
+      position: relative;
+      width: 58px;
+      height: 58px;
+      flex-shrink: 0;
+    }
+
+    .brand-badge {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 30%, #2d6b3f 0%, #1e4d2b 68%);
+      color: var(--csu-green);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 0 3px rgba(200,195,114,0.9), inset 0 0 0 2px rgba(255,255,255,0.78);
+      overflow: hidden;
+      position: absolute;
+      inset: 0;
+    }
+
+    .brand-logo-img {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      border-radius: 50%;
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      background: transparent;
+      box-shadow: 0 0 0 3px rgba(200,195,114,0.9);
+    }
+
+    .topbar-note {
+      font-size: 0.92rem;
+      color: rgba(255,255,255,0.88);
+      max-width: 520px;
+      text-align: right;
+    }
+
+    .status-chip {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      font-size: 0.72rem;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      vertical-align: middle;
+    }
+
+    .container {
+      padding-top: 26px;
+      padding-bottom: 30px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(30,77,43,0.96), rgba(30,77,43,0.88));
+      color: white;
+      border-radius: 18px;
+      padding: 26px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 22px;
+    }
+
+    .hero::after {
+      content: "HAZARD SCREENING";
+      position: absolute;
+      right: -18px;
+      bottom: 8px;
+      font-size: 1.6rem;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: rgba(255,255,255,0.08);
+      transform: rotate(-8deg);
+      pointer-events: none;
+    }
+
+    .hero h1 {
+      margin: 0 0 8px 0;
+      font-size: 2rem;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 920px;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .banner-row {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .mini-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-left: 6px solid var(--csu-gold);
+      border-radius: 16px;
+      padding: 16px 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .mini-card h3 {
+      margin: 0 0 6px 0;
+      color: var(--csu-green);
+      font-size: 1rem;
+    }
+
+    .mini-card p,
+    .mini-card ul {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .mini-card ul {
+      padding-left: 18px;
+      margin-top: 6px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 1.3rem;
+      color: var(--csu-green);
+    }
+
+    .section-title {
+      margin: 18px 0 10px;
+      font-size: 0.98rem;
+      font-weight: bold;
+      color: var(--csu-green);
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      border-bottom: 2px solid rgba(200, 195, 114, 0.5);
+      padding-bottom: 4px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    .input-group {
+      margin-bottom: 14px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 11px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: 0.98rem;
+      background: #fff;
+    }
+
+    input:focus, select:focus {
+      outline: 2px solid rgba(30,77,43,0.15);
+      border-color: var(--csu-green);
+    }
+
+    .hint {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .info-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--csu-green);
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      cursor: pointer;
+      position: relative;
+      margin-left: 6px;
+    }
+
+    .tooltip {
+      position: absolute;
+      bottom: 125%;
+      right: 0;
+      background: #1f2937;
+      color: white;
+      padding: 6px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+
+    .info-icon:hover .tooltip {
+      opacity: 1;
+    }
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 9px 14px;
+      border-radius: 999px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      letter-spacing: 0.4px;
+    }
+
+    .ok {
+      color: var(--safe-green);
+      background: var(--safe-green-bg);
+    }
+
+    .warning {
+      color: var(--hazard-amber);
+      background: var(--hazard-amber-bg);
+    }
+
+    .violation {
+      color: var(--hazard-red);
+      background: var(--hazard-red-bg);
+    }
+
+    .status-panel {
+      border: 2px dashed rgba(30,77,43,0.18);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      background: linear-gradient(180deg, rgba(246,247,242,0.9), #ffffff);
+    }
+
+    .hazard-tape {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 14px;
+      margin-bottom: 12px;
+      background: repeating-linear-gradient(
+        -45deg,
+        #1d1d1d,
+        #1d1d1d 10px,
+        #f2c94c 10px,
+        #f2c94c 20px
+      );
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: 800;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+    }
+
+    .hazard-tape span {
+      color: #ffffff;
+    }
+
+    .hazard-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.16);
+      display: inline-grid;
+      place-items: center;
+      font-size: 0.72rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 14px 0 18px;
+    }
+
+    .metric {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fcfcfa;
+    }
+
+    .metric .label {
+      font-size: 0.84rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .metric .value {
+      font-size: 1.22rem;
+      font-weight: bold;
+      margin-top: 4px;
+      color: var(--csu-green);
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    .small-note {
+      margin-top: 16px;
+      font-size: 0.9rem;
+      color: var(--muted);
+      background: #fafbf7;
+      border-left: 4px solid var(--csu-gold);
+      padding: 10px 12px;
+      border-radius: 10px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 11px 15px;
+      font-size: 0.96rem;
+      cursor: pointer;
+      font-weight: bold;
+      transition: transform 0.15s ease, opacity 0.15s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      opacity: 0.97;
+    }
+
+    .primary-btn {
+      background: var(--csu-green);
+      color: white;
+    }
+
+    .secondary-btn {
+      background: var(--csu-gold);
+      color: #1d2a1f;
+    }
+
+    .tertiary-btn {
+      background: #e9ede3;
+      color: var(--text);
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 940px) {
+      .grid,
+      .banner-row {
+        grid-template-columns: 1fr;
+      }
+
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        
+        </div>
+        <div class="brand-text">
+          <div class="brand-title">Colorado State University · CIVE 438 Tool 2 Prototype <span class="status-chip">Engineering Screening UI</span></div>
+          <div class="brand-subtitle">Hazardous Waste Storage Compliance · Campus Facility Prototype</div>
+        </div>
+      </div>
+      <div class="topbar-note">Hazardous waste storage screening for campus-style lab and facility scenarios</div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="hero">
+      <h1>CSU Hazardous Waste Storage Compliance Screening Tool</h1>
+      <p>
+        Built as a simplified engineering screening tool for hazardous waste storage conditions that might occur in university labs, maintenance shops, or campus support facilities. It helps identify obvious risk flags, documentation gaps, and time-based storage concerns using transparent rule-based logic.
+      </p>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <h2>Quickstart / User Guide</h2>
+      <p>This tool is a simplified screening aid for hazardous waste storage conditions in campus facilities. Follow the steps below to use it correctly:</p>
+      <ul>
+        <li><strong>Step 1 – Enter Inputs:</strong> Provide generator category, waste type, storage duration, and observed conditions.</li>
+        <li><strong>Step 2 – Review Tooltips:</strong> Hover over the <strong>?</strong> icons to understand each input and expected values.</li>
+        <li><strong>Step 3 – Run Assessment:</strong> Click "Run Assessment" to evaluate the storage conditions.</li>
+        <li><strong>Step 4 – Interpret Results:</strong>
+          <ul>
+            <li><strong>Compliant:</strong> No major or minor issues detected.</li>
+            <li><strong>Warning:</strong> Minor concerns that should be reviewed.</li>
+            <li><strong>Potential Violation:</strong> One or more serious issues requiring attention.</li>
+          </ul>
+        </li>
+        <li><strong>Step 5 – Take Action:</strong> Use the "Triggered Issues" and "Recommendations" sections to guide next steps.</li>
+      </ul>
+      <p style="margin-top:10px;"><em>Note:</em> This is a screening tool and should not replace official regulatory review.</p>
+    </div>
+
+    <div class="banner-row">
+      <div class="mini-card">
+        <h3>Campus Use Case</h3>
+        <p>
+          This prototype is styled around a CSU facility scenario: a waste accumulation area serving labs, shops, or operations spaces where containers must be checked for closure, labeling, storage duration, compatibility, and general condition.
+        </p>
+      </div>
+      <div class="mini-card">
+        <h3>Screening Focus</h3>
+        <ul>
+          <li>Visible storage condition flags</li>
+          <li>Simplified generator-category time checks</li>
+          <li>Hazard-style warning output for quick review</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Storage Inputs</h2>
+
+        <div class="section-title">Waste and Generator Information</div>
+
+        <div class="input-group">
+          <label for="generatorCategory">Generator Category <span class="info-icon">?<span class="tooltip">Defines regulatory storage time limits</span></span></label>
+          <select id="generatorCategory">
+            <option value="VSQG">VSQG</option>
+            <option value="SQG">SQG</option>
+            <option value="LQG">LQG</option>
+          </select>
+          <div class="hint">Used here to assign a simplified storage-time threshold for the screening logic.</div>
+        </div>
+
+        <div class="input-group">
+          <label for="wasteType">Waste Type <span class="info-icon">?<span class="tooltip">General hazard classification of waste</span></span></label>
+          <select id="wasteType">
+            <option value="Ignitable">Ignitable</option>
+            <option value="Corrosive">Corrosive</option>
+            <option value="Toxic">Toxic</option>
+            <option value="Unknown Hazardous Waste">Unknown Hazardous Waste</option>
+          </select>
+          <div class="hint">Represents the general hazard profile of the stored waste stream.</div>
+        </div>
+
+        <div class="input-group">
+          <label for="daysStored">Days in Storage <span class="info-icon">?<span class="tooltip">How long waste has been stored onsite</span></span></label>
+          <input type="number" id="daysStored" min="0" value="45" />
+          <div class="hint">Number of days the waste container has remained in the campus accumulation area.</div>
+        </div>
+
+        <div class="input-group">
+          <label for="amountStored">Amount Stored (gal) <span class="info-icon">?<span class="tooltip">Approximate volume stored</span></span></label>
+          <input type="number" id="amountStored" min="0" step="0.1" value="55" />
+          <div class="hint">Context metric for the stored quantity. Version 1 uses it only as a cautionary screening value.</div>
+        </div>
+
+        <div class="section-title">Observed Storage Conditions</div>
+
+        <div class="input-group">
+          <label for="containerCondition">Container Condition <span class="info-icon">?<span class="tooltip">Physical state of container</span></span></label>
+          <select id="containerCondition">
+            <option value="Good">Good</option>
+            <option value="Damaged">Damaged</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label for="containerClosed">Container Closed? <span class="info-icon">?<span class="tooltip">Must be closed unless adding waste</span></span></label>
+          <select id="containerClosed">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label for="labeledProperly">Labeled Properly? <span class="info-icon">?<span class="tooltip">Proper hazard labels required</span></span></label>
+          <select id="labeledProperly">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label for="secondaryContainment">Secondary Containment Present? <span class="info-icon">?<span class="tooltip">Prevents spills from spreading</span></span></label>
+          <select id="secondaryContainment">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label for="incompatibleStored">Incompatible Wastes Stored Together? <span class="info-icon">?<span class="tooltip">Certain wastes cannot be stored together</span></span></label>
+          <select id="incompatibleStored">
+            <option value="No">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
+
+        <div class="input-group">
+          <label for="inspectionUpToDate">Inspection Up to Date? <span class="info-icon">?<span class="tooltip">Regular inspections are required</span></span></label>
+          <select id="inspectionUpToDate">
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div class="actions">
+          <button class="primary-btn" onclick="runAssessment()">Run Assessment</button>
+          <button class="secondary-btn" onclick="loadExampleCase()">Load CSU Lab Example</button>
+          <button class="tertiary-btn" onclick="resetForm()">Reset</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Screening Results</h2>
+
+        <div class="status-panel">
+          <div class="hazard-tape"><span class="hazard-icon">☣</span><span>CAMPUS HAZARDOUS WASTE SCREENING</span></div><br />
+          <div id="statusBadge" class="badge ok">COMPLIANT</div>
+          <div id="statusSummary">
+            No major or minor screening issues were triggered for the current inputs.
+          </div>
+        </div>
+
+        <div class="metric-grid">
+          <div class="metric">
+            <div class="label">Threshold Used</div>
+            <div class="value" id="thresholdValue">180 days</div>
+          </div>
+          <div class="metric">
+            <div class="label">Days in Storage</div>
+            <div class="value" id="daysValue">45 days</div>
+          </div>
+          <div class="metric">
+            <div class="label">Major Flags</div>
+            <div class="value" id="majorCount">0</div>
+          </div>
+          <div class="metric">
+            <div class="label">Minor Flags</div>
+            <div class="value" id="minorCount">0</div>
+          </div>
+        </div>
+
+        <h3>Triggered Issues</h3>
+        <ul id="issuesList">
+          <li>No issues triggered.</li>
+        </ul>
+
+        <h3>Operator Recommendations</h3>
+        <ul id="recommendationsList">
+          <li>Maintain current storage conditions and continue routine inspections.</li>
+        </ul>
+
+        <div class="small-note">
+          Simplified classroom thresholds used in this version: VSQG = 365 days, SQG = 180 days, and LQG = 90 days. This is a campus-themed engineering screening prototype, not an official regulatory determination.
+        </div>
+
+        <div class="footer-note">
+          Suggested framing for your report: this tool supports early review of visible hazardous waste storage issues in a CSU-style facility setting before a deeper compliance check.
+        </div>
+      </div>
+          <div class="card" style="margin-top:20px;">
+        <h2>Why This Result Occurred</h2>
+        <p id="whyResult">No issues triggered, so the system is operating within expected conditions.</p>
+
+        <h2 style="margin-top:16px;">Confidence Level</h2>
+        <p id="confidenceLevel">High – all inputs are clearly defined.</p>
+
+        <h2 style="margin-top:16px;">Risk Level</h2>
+        <div style="height:12px;background:#ddd;border-radius:6px;overflow:hidden;margin-top:6px;">
+          <div id="riskBar" style="height:100%;width:20%;background:green;"></div>
+        </div>
+
+        <h2 style="margin-top:16px;">Key Assumptions</h2>
+        <ul>
+          <li>Waste type is correctly identified</li>
+          <li>Storage thresholds are simplified approximations</li>
+          <li>Conditions reflect a snapshot in time</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function getThreshold(generatorCategory) {
+      const thresholds = {
+        VSQG: 365,
+        SQG: 180,
+        LQG: 90
+      };
+      return thresholds[generatorCategory] || 180;
+    }
+
+    function setStatus(status, summary) {
+      const badge = document.getElementById('statusBadge');
+      badge.className = 'badge';
+
+      if (status === 'COMPLIANT') {
+        badge.classList.add('ok');
+      } else if (status === 'WARNING') {
+        badge.classList.add('warning');
+      } else {
+        badge.classList.add('violation');
+      }
+
+      badge.textContent = status;
+      document.getElementById('statusSummary').textContent = summary;
+    }
+
+    function renderList(elementId, items, fallbackText) {
+      const list = document.getElementById(elementId);
+      list.innerHTML = '';
+
+      if (!items.length) {
+        const li = document.createElement('li');
+        li.textContent = fallbackText;
+        list.appendChild(li);
+        return;
+      }
+
+      items.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = item;
+        list.appendChild(li);
+      });
+    }
+
+    function runAssessment() {
+      const generatorCategory = document.getElementById('generatorCategory').value;
+      const wasteType = document.getElementById('wasteType').value;
+      const daysStored = Number(document.getElementById('daysStored').value);
+      const amountStored = Number(document.getElementById('amountStored').value);
+      const containerCondition = document.getElementById('containerCondition').value;
+      const containerClosed = document.getElementById('containerClosed').value;
+      const labeledProperly = document.getElementById('labeledProperly').value;
+      const secondaryContainment = document.getElementById('secondaryContainment').value;
+      const incompatibleStored = document.getElementById('incompatibleStored').value;
+      const inspectionUpToDate = document.getElementById('inspectionUpToDate').value;
+
+      const threshold = getThreshold(generatorCategory);
+      const majorFlags = [];
+      const minorFlags = [];
+      const recommendations = [];
+
+      if (containerCondition === 'Damaged') {
+        majorFlags.push('Container is damaged.');
+        recommendations.push('Replace or overpack the damaged container immediately.');
+      }
+
+      if (containerClosed === 'No') {
+        majorFlags.push('Container is not closed.');
+        recommendations.push('Close the container unless active waste addition is occurring under allowed conditions.');
+      }
+
+      if (labeledProperly === 'No') {
+        majorFlags.push('Container is not labeled properly.');
+        recommendations.push('Apply required hazardous waste labels and accumulation markings.');
+      }
+
+      if (incompatibleStored === 'Yes') {
+        majorFlags.push('Potentially incompatible wastes are stored together.');
+        recommendations.push('Separate incompatible wastes and verify storage compatibility.');
+      }
+
+      if (daysStored > threshold) {
+        majorFlags.push(`Storage time exceeds the simplified ${threshold}-day threshold for ${generatorCategory}.`);
+        recommendations.push('Review accumulation start dates and move material to compliant next-step handling.');
+      }
+
+      if (secondaryContainment === 'No') {
+        minorFlags.push('Secondary containment is not present.');
+        recommendations.push('Consider adding secondary containment to reduce spill risk and improve storage robustness.');
+      }
+
+      if (inspectionUpToDate === 'No') {
+        minorFlags.push('Inspection status is not up to date.');
+        recommendations.push('Perform and document a current storage area inspection.');
+      }
+
+      if (wasteType === 'Unknown Hazardous Waste') {
+        minorFlags.push('Waste classification is uncertain or unknown.');
+        recommendations.push('Verify the waste classification before relying on this screening result.');
+      }
+
+      if (amountStored > 500) {
+        minorFlags.push('Large stored quantity entered; review whether added site controls or area capacity checks are needed.');
+        recommendations.push('Confirm the storage area is appropriate for the entered quantity and container count.');
+      }
+
+      let status = 'COMPLIANT';
+      let summary = 'No major or minor screening issues were triggered for the current inputs.';
+
+      if (majorFlags.length > 0) {
+        status = 'POTENTIAL VIOLATION';
+        summary = 'One or more major screening conditions were triggered. Immediate review is recommended for the campus accumulation area.';
+      } else if (minorFlags.length > 0) {
+        status = 'WARNING';
+        summary = 'No major flags were triggered, but one or more cautionary conditions were identified for the storage area.';
+      }
+
+      const allIssues = [...majorFlags, ...minorFlags];
+
+      if (!recommendations.length) {
+        recommendations.push('Maintain current storage conditions and continue routine inspections.');
+      }
+
+      setStatus(status, summary);
+
+      // WHY RESULT
+      let whyText = '';
+      if (majorFlags.length > 0) {
+        whyText = `This result is classified as ${status} because ${majorFlags.length} major condition(s) were triggered.`;
+      } else if (minorFlags.length > 0) {
+        whyText = `This result is classified as ${status} due to ${minorFlags.length} minor condition(s).`;
+      } else {
+        whyText = 'No major or minor issues were triggered.';
+      }
+      document.getElementById('whyResult').textContent = whyText;
+
+      // CONFIDENCE
+      let confidence = 'High';
+      if (wasteType === 'Unknown Hazardous Waste' || minorFlags.length > 1) {
+        confidence = 'Medium';
+      }
+      if (majorFlags.length > 0) {
+        confidence = 'Low';
+      }
+      document.getElementById('confidenceLevel').textContent = confidence;
+
+      // RISK BAR
+      const riskBar = document.getElementById('riskBar');
+      if (status === 'COMPLIANT') {
+        riskBar.style.width = '25%';
+        riskBar.style.background = 'green';
+      } else if (status === 'WARNING') {
+        riskBar.style.width = '60%';
+        riskBar.style.background = 'orange';
+      } else {
+        riskBar.style.width = '100%';
+        riskBar.style.background = 'red';
+      }
+      document.getElementById('thresholdValue').textContent = `${threshold} days`;
+      document.getElementById('daysValue').textContent = `${daysStored} days`;
+      document.getElementById('majorCount').textContent = majorFlags.length;
+      document.getElementById('minorCount').textContent = minorFlags.length;
+
+      renderList('issuesList', allIssues, 'No issues triggered.');
+      renderList('recommendationsList', recommendations, 'No recommendations at this time.');
+    }
+
+    function loadExampleCase() {
+      document.getElementById('generatorCategory').value = 'LQG';
+      document.getElementById('wasteType').value = 'Ignitable';
+      document.getElementById('daysStored').value = 110;
+      document.getElementById('amountStored').value = 120;
+      document.getElementById('containerCondition').value = 'Good';
+      document.getElementById('containerClosed').value = 'No';
+      document.getElementById('labeledProperly').value = 'No';
+      document.getElementById('secondaryContainment').value = 'No';
+      document.getElementById('incompatibleStored').value = 'No';
+      document.getElementById('inspectionUpToDate').value = 'No';
+      runAssessment();
+    }
+
+    function resetForm() {
+      document.getElementById('generatorCategory').value = 'VSQG';
+      document.getElementById('wasteType').value = 'Ignitable';
+      document.getElementById('daysStored').value = 45;
+      document.getElementById('amountStored').value = 55;
+      document.getElementById('containerCondition').value = 'Good';
+      document.getElementById('containerClosed').value = 'Yes';
+      document.getElementById('labeledProperly').value = 'Yes';
+      document.getElementById('secondaryContainment').value = 'Yes';
+      document.getElementById('incompatibleStored').value = 'No';
+      document.getElementById('inspectionUpToDate').value = 'Yes';
+      runAssessment();
+    }
+
+    runAssessment();
+  </script>
+</body>
+</html>
+
